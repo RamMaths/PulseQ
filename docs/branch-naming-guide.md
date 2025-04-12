@@ -34,27 +34,13 @@ For example: `feature/#3_create-graphql-api`
 
 ## Why This Matters
 
-### 1. Automatic Environment Creation
-
-Our deployment script (`deploy.sh`) automatically determines the deployment environment based on branch names:
-
-- `main` or `master` → Production environment
-- `staging` or `develop` → Staging environment
-- Branches starting with `feature/`, `bugfix/`, `hotfix/`, etc. → PR environments with sanitized branch names
-
-```bash
-# Example: How branch names map to environments
-feature/#3_create-oidc-role → pr-feature-3-create-oidc-role
-bugfix/#17_fix-login-error → pr-bugfix-17-fix-login-error
-```
-
-### 2. Traceability
+### 1. Traceability
 
 - Links code changes directly to issues/tickets
 - Makes it easy to find which branch contains work for a specific issue
 - Enables automatic linking in many issue tracking systems
 
-### 3. Clarity and Context
+### 2. Clarity and Context
 
 - Anyone can quickly understand the purpose and scope of a branch
 - Makes repository history more meaningful
@@ -110,11 +96,3 @@ bugfix/#17_fix-login-error → pr-bugfix-17-fix-login-error
 - `feature/new-stuff` (missing issue number and vague description)
 - `bug/#17` (missing description)
 - `feature/#42_Add_User_Profile` (not using kebab-case)
-
-## Integration with CI/CD
-
-Our branch naming convention integrates with our CI/CD pipeline:
-
-1. The `deploy.sh` script extracts the environment name from the branch name
-2. CI/CD jobs use this information to deploy to the appropriate environment
-3. This allows for isolated testing of each feature branch in its own environment
