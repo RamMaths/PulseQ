@@ -7,4 +7,5 @@ graph TD
     C -- "POST /ack"     --> F[ACK Handler]
     %% Optional monitoring/logging component
     B --> G[Logging & Monitoring]
+
 ```
