@@ -39,3 +39,8 @@ This project is structured into the following core services:
 git clone https://github.com/RamMaths/PulseQ.git
 cd PulseQ
 ```
+
+## How to contribute
+
+Feel free to contribute to this project. See available issues and make a pull request following our [branch naming guide](./docs/branch-naming-guide.md).
+
