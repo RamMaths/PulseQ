@@ -1,0 +1,27 @@
+# Build artifacts
+build/
+*.so
+*.a
+*.o
+
+# IDE files
+.vscode/
+.idea/
+.cache/
+compile_commands.json
+
+# Dependencies
+third_party/
+
+# Binaries
+/pulseq_bin
+/pulseq
+
+# Build directory
+/build/
+pulseq_bin
+*.dylib
+*.dll
+
+# Logs
+*.log
