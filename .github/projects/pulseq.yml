@@ -1,0 +1,32 @@
+name: PulseQ Message Queue
+description: Vertical slice implementation of SQS-like system
+columns:
+  - name: Backlog
+    purpose: Features awaiting prioritization
+  - name: Ready for Dev
+    purpose: Approved features ready for implementation
+  - name: In Progress
+    purpose: Actively being worked on
+  - name: Review
+    purpose: Code/Design review needed
+  - name: Done
+    purpose: Completed and verified
+
+workflows:
+  triage:
+    - when: issue.opened
+      then: add to Backlog column
+  progress:
+    - when: issue.labeled with "ready"
+      then: move to "Ready for Dev"
+    - when: pull_request.opened
+      then: move to "In Progress"
+    - when: pull_request.review_requested
+      then: move to "Review"
+    - when: pull_request.merged
+      then: move to "Done"
+
+milestones:
+  - title: Vertical Slice 1 - Basic Flow
+    description: Core message flow from producer to consumer
+    due: 2025-01-05
