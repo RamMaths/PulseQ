@@ -37,13 +37,33 @@ The system is composed of modular services that work together to enable reliable
 
 ### Architecture Diagram
 
-![[../diagrams/architecture-diagram.md]]
+```mermaid
+graph TD
+    A[Producer Client] -->|Sends message Async HTTP/WebSocket| B[Networking Layer]
+    B -->|Pass message to| C[Queue Manager]
+    C -->|Enqueue message Thread Pool| D[Storage Layer]
+    D -->|Store/Persist message| C
+    C -->|Trigger Async event| E[Consumer Handler]
+    E -->|Returns message Async| F[Consumer Client]
+    F -->|Acknowledges message| C
+    C -.->|Failed messages / retries| G[Dead-Letter Queue]
+    LB[Load Balancer] -->|Distributes requests| B
+```
 
 # Networking Layer
 
 ## Diagram
 
-![[../diagrams/networking-layer-diagram.md]]
+```mermaid
+graph TD
+    A[Incoming Requests (HTTP/WebSocket)] --> B[Async I/O Manager / Event Loop]
+    B --> C[Request Dispatcher]
+    C -- "POST /enqueue" --> D[Enqueue Handler]
+    C -- "GET /dequeue"  --> E[Dequeue Handler]
+    C -- "POST /ack"     --> F[ACK Handler]
+    %% Optional monitoring/logging component
+    B --> G[Logging & Monitoring]
+```
 
 ## Overview
 
@@ -62,7 +82,24 @@ The system is composed of modular services that work together to enable reliable
 
 ## Diagram
 
-![[../diagrams/queue-service-diagram.md]]
+```mermaid
+graph TD
+    NL[Networking Layer Request]
+    QM[Queue Manager]
+    WP[Worker Thread Pool]
+    SL[Storage Layer]
+    CH[Consumer Handler]
+    VTM[Visibility Timeout Manager]
+    DLQ[Dead-Letter Queue]
+
+    NL --> QM
+    QM --> WP
+    WP --> SL
+    WP --> CH
+    QM --> VTM
+    VTM -- "Requeue on timeout" --> WP
+    WP -- "Exceeds retry limit" --> DLQ
+```
 
 ## Overview
 
@@ -85,7 +122,19 @@ The system is composed of modular services that work together to enable reliable
 
 ## Diagram
 
-![[../diagrams/storage-layer-diagram.md]]
+```mermaid
+graph TD
+    QM[Queue Manager / Worker Threads] -->|Enqueue Message| IMS[In-Memory Storage]
+    IMS -->|Periodic / On-Demand Flush| RED[Redis Persistence Layer]
+    IMS -->|Retrieve Message| QM
+    RED -->|Fallback/Recovery| QM
+    IMS -->|TTL Management| TTL[TTL Manager]
+    RED -->|TTL Management| TTL
+
+    %% Shutdown Integration
+    QM -->|Shutdown Signal| SS[Shutdown Persistence Service]
+    SS -->|Flush IMS & DLQ| RED
+```
 
 ## Overview
 
@@ -108,7 +157,25 @@ The system is composed of modular services that work together to enable reliable
 
 ## Diagram
 
-![[../diagrams/consumer-handler-diagram.md]]
+```mermaid
+graph TD
+    QM[Queue Manager] -->|New Message Available| CH[Consumer Handler]
+    CH -->|Notify subscribers| CSM[Consumer Subscription Manager]
+    CSM -->|Dispatch Message| CC1[Consumer Client 1]
+    CSM -->|Dispatch Message| CC2[Consumer Client 2]
+    CSM -->|Dispatch Message| CCn[Consumer Client n]
+    
+    %% Acknowledgment flow
+    CC1 -->|ACK/NACK| CH
+    CC2 -->|ACK/NACK| CH
+    CCn -->|ACK/NACK| CH
+    CH -->|Forward ACK/NACK| QM
+
+    %% Subscription registration
+    CC1 -->|Subscribe/Unsubscribe| CSM
+    CC2 -->|Subscribe/Unsubscribe| CSM
+    CCn -->|Subscribe/Unsubscribe| CSM
+```
 
 ## Overview
 
@@ -140,7 +207,16 @@ The system is composed of modular services that work together to enable reliable
 
 ## Diagram
 
-![[../diagrams/dead-letter-queue-diagram.md]]
+```mermaid
+graph TD
+    QM[Queue Manager] -->|Message exceeds retry limit| DLQ[Dead-Letter Queue]
+    DLQ -->|Persist Failed Messages| PDB[Persistent Database / Storage]
+    DLQ -->|Trigger Alerts| MON[Monitoring / Alerting System]
+
+    %% Shutdown Integration for DLQ
+    QM -->|Shutdown Signal| SS_DLQ[Shutdown Persistence Service for DLQ]
+    SS_DLQ -->|Flush DLQ Messages| PDB
+```
 
 ## Overview
 
